@@ -11,8 +11,7 @@ import Pagination from '@/components/Pagination/Pagination';
 import Loader from '@/components/Loader/Loader';
 import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
 import NoteList from '@/components/NoteList/NoteList';
-import Modal from '@/components/Modal/Modal';
-import NoteForm from '@/components/NoteForm/NoteForm';
+import Link from 'next/link';
 
 interface NotesClientProps {
   initialTag?: string;
@@ -23,7 +22,6 @@ export default function NotesClient({ initialTag = '', initialPage = 1 }: NotesC
   const [page, setPage] = useState(initialPage);
   const [search, setSearch] = useState('');
   const [debouncedSearch] = useDebounce(search, 500);
-  const [isCreateModalOpen, setCreateModalOpen] = useState(false);
 
   const perPage = 12;
   const tag = initialTag === 'All' ? '' : initialTag;
@@ -34,15 +32,18 @@ export default function NotesClient({ initialTag = '', initialPage = 1 }: NotesC
     refetchOnWindowFocus: false,
   });
 
-  // скидаємо сторінку при зміні пошуку
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, initialTag]);
 
-  useEffect(() => {
-    if (isError) toast.error('Something went wrong.');
-    else if (!isLoading && data?.notes.length === 0) toast.error('No notes found.');
-  }, [isError, data, isLoading]);
+useEffect(() => {
+  if (isError) {
+    toast.error('Something went wrong.');
+  } else if (!isLoading && data?.notes?.length === 0) {
+    toast.error('No notes found.');
+  }
+}, [isError, isLoading, data?.notes?.length]);
+
 
   return (
     <div className={css.app}>
@@ -55,20 +56,14 @@ export default function NotesClient({ initialTag = '', initialPage = 1 }: NotesC
           <Pagination pageCount={data.totalPages} currentPage={page} onPageChange={setPage} />
         )}
 
-        <button className={css.button} onClick={() => setCreateModalOpen(true)}>
+        <Link href="/notes/action/create" className={css.button}>
           Create note +
-        </button>
+        </Link>
       </header>
 
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
       {!isLoading && !isError && <NoteList notes={data?.notes ?? []} />}
-
-      {isCreateModalOpen && (
-        <Modal onClose={() => setCreateModalOpen(false)}>
-          <NoteForm onCancel={() => setCreateModalOpen(false)} />
-        </Modal>
-      )}
     </div>
   );
 }
