@@ -9,7 +9,6 @@ import {
 import { useDebounce } from "use-debounce";
 import toast, { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 
 import css from "./NotesPage.module.css";
 import { fetchNotes, createNote, NotesResponse } from "@/lib/api";
@@ -28,10 +27,9 @@ export default function NotesPage() {
   const [isModalOpen, setModalOpen] = useState(false);
 
   const perPage = 10;
-
   const queryClient = useQueryClient();
-  const router = useRouter();
 
+  // ✅ мутация для создания заметки
   const { mutate } = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
@@ -44,14 +42,17 @@ export default function NotesPage() {
     },
   });
 
+  // сброс страницы при изменении поиска
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
+  // загрузка списка заметок
   const { data, isLoading, isError } = useQuery<NotesResponse, Error>({
     queryKey: ["notes", page, debouncedSearch],
     queryFn: () => fetchNotes(debouncedSearch, page, perPage),
     placeholderData: keepPreviousData,
+    enabled: typeof window !== "undefined", // ⚡ только на клиенте
   });
 
   useEffect(() => {
@@ -88,7 +89,11 @@ export default function NotesPage() {
 
       {isModalOpen && (
         <Modal onClose={() => setModalOpen(false)}>
-          <NoteFormComponent onCancel={() => setModalOpen(false)} />
+          {/* ✅ передаем mutate в форму */}
+          <NoteFormComponent
+            onCancel={() => setModalOpen(false)}
+            onSubmit={(values) => mutate(values)}
+          />
         </Modal>
       )}
     </div>
