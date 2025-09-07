@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 
 type NoteFormProps = {
   onCancel?: () => void;
+  onSubmit?: (values: { title: string; content: string }) => void;
 };
 
 export default function NoteForm({ onCancel }: NoteFormProps) {
