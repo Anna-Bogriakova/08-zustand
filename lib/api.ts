@@ -16,7 +16,12 @@ export const fetchNotes = async (
   perPage: number = 12,
   search: string = ""
 ): Promise<NotesResponse> => {
-  const queryParams: { page: number; perPage: number; tag?: string; search?: string } = { page, perPage };
+  const queryParams: {
+    page: number;
+    perPage: number;
+    tag?: string;
+    search?: string;
+  } = { page, perPage };
   if (tag) queryParams.tag = tag;
   if (search) queryParams.search = search; // додали пошук
 
@@ -28,18 +33,15 @@ export const fetchNotes = async (
   return response.data;
 };
 
-
-export const createNote = async (note: Pick<Note, "title" | "content" | "tag">): Promise<Note> => {
-  const response = await axios.post<Note>(
-    BASE_URL,
-    note,
-    {
-      headers: {
-        Authorization: `Bearer ${TOKEN}`,
-        "Content-Type": "application/json",
-      },
-    }
-  );
+export const createNote = async (
+  note: Pick<Note, "title" | "content" | "tag">
+): Promise<Note> => {
+  const response = await axios.post<Note>(BASE_URL, note, {
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      "Content-Type": "application/json",
+    },
+  });
   return response.data;
 };
 
@@ -52,23 +54,21 @@ export const deleteNote = async (id: string): Promise<Note> => {
   return response.data;
 };
 
-
-
 export const fetchNoteById = async (id: string): Promise<Note> => {
   const response = await axios.get<Note>(`${BASE_URL}/${id}`, {
     headers: {
-      Authorization:`Bearer ${TOKEN}`,
+      Authorization: `Bearer ${TOKEN}`,
     },
-  })
+  });
   return response.data;
-}
+};
 
 export const fetchTags = async (): Promise<string[]> => {
   const response = await axios.get(BASE_URL, {
     headers: {
       Authorization: `Bearer ${TOKEN}`,
     },
-     params: { page: 1 ,perPage:15 },
+    params: { page: 1, perPage: 15 },
   });
 
   const notes = response.data.notes;
