@@ -1,25 +1,48 @@
 "use client";
 
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import toast, { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import css from "./NotesPage.module.css";
-import { fetchNotes, NotesResponse } from "@/lib/api";
+import { fetchNotes, createNote, NotesResponse } from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 import Loader from "@/components/Loader/Loader";
 import ErrorMessage from "@/components/ErrorMessage/ErrorMessage";
 import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
-import NoteForm from "@/components/NoteForm/NoteForm";
+import NoteFormComponent from "@/components/NoteForm/NoteForm";
 
-export default function NotesClient() {
-  const [isModalOpen, setModalOpen] = useState(false);
-  const [page, setPage] = useState(1);
-  const perPage = 12;
+export default function NotesPage() {
   const [search, setSearch] = useState("");
-  const [debouncedSearch] = useDebounce(search, 500);
+  const [debouncedSearch] = useDebounce(search, 300);
+  const [page, setPage] = useState(1);
+  const [isModalOpen, setModalOpen] = useState(false);
+
+  const perPage = 10;
+
+  const queryClient = useQueryClient();
+  const router = useRouter();
+
+  const { mutate } = useMutation({
+    mutationFn: createNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+      toast.success("Note created!");
+      setModalOpen(false);
+    },
+    onError: () => {
+      toast.error("Failed to create note");
+    },
+  });
 
   useEffect(() => {
     setPage(1);
@@ -61,12 +84,11 @@ export default function NotesClient() {
 
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-
       {!isLoading && !isError && <NoteList notes={data?.notes ?? []} />}
 
       {isModalOpen && (
         <Modal onClose={() => setModalOpen(false)}>
-          <NoteForm onCancel={() => setModalOpen(false)} />
+          <NoteFormComponent onCancel={() => setModalOpen(false)} />
         </Modal>
       )}
     </div>

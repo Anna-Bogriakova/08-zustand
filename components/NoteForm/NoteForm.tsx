@@ -6,21 +6,35 @@ import css from "./NoteForm.module.css";
 import { useNoteStore } from "@/lib/store/noteStore";
 import { useRouter } from "next/navigation";
 
-export default function NoteForm() {
+type NoteFormProps = {
+  onCancel?: () => void;
+};
+
+export default function NoteForm({ onCancel }: NoteFormProps) {
   const { draft, setDraft, clearDraft } = useNoteStore();
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   const { mutate } = useMutation({
     mutationFn: createNote,
     onSuccess: () => {
       clearDraft();
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-      router.back();
+
+      if (onCancel) {
+        onCancel(); // ✅ виклик з модалки
+      } else {
+        router.back(); // ✅ якщо форма відкрита окремо
+      }
     },
   });
-  const router = useRouter();
+
   const handleCancel = () => {
-    router.back();
+    if (onCancel) {
+      onCancel();
+    } else {
+      router.back();
+    }
   };
 
   const handleChange = (
