@@ -1,45 +1,50 @@
-'use client';
+"use client";
 
-import { useQuery } from '@tanstack/react-query';
-import { fetchNoteById } from '@/lib/api';
-import Loader from '@/components/Loader/Loader';
-import ErrorMessage from '@/components/ErrorMessage/ErrorMessage';
-import Modal from '@/components/Modal/Modal';
-import { useRouter } from 'next/navigation';
-import { Note } from '@/types/note';
-import css from './NotePreview.module.css';
+import { useParams, useRouter } from "next/navigation";
+import css from "./NotePreview.module.css";
+import { useQuery } from "@tanstack/react-query";
+import { fetchNoteById } from "@/lib/api";
+import Modal from "@/components/Modal/Modal";
 
-interface NotePreviewProps {
-  noteId: string;
-}
-
-export default function NotePreviewClient({ noteId }: NotePreviewProps) {
+export default function PreviewModal() {
   const router = useRouter();
+  const close = () => router.back();
+  const { id } = useParams<{ id: string }>();
 
-  const { data, isLoading, isError } = useQuery<Note, Error>({
-    queryKey: ['note', noteId],
-    queryFn: () => fetchNoteById(noteId),
+  const {
+    data: note,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["note", id],
+    queryFn: () => fetchNoteById(id),
     refetchOnMount: false,
   });
+  if (isLoading) {
+    return <p>Loading, please wait...</p>;
+  }
 
-  if (isLoading) return <Loader />;
-  if (isError || !data) return <ErrorMessage />;
+  if (!note || error) {
+    return <p>Something went wrong.</p>;
+  }
 
   return (
-    <Modal onClose={() => router.back()}>
+    <Modal onClose={close}>
+      <button onClick={close} className={css.backBtn}>
+        Close
+      </button>
       <div className={css.container}>
         <div className={css.item}>
           <div className={css.header}>
-            <h2>{data.title}</h2>
-            <button className={css.backBtn} onClick={() => router.back()}>
-              Back
-            </button>
+            <h2>{note.title}</h2>
           </div>
-          <div className={css.content}>{data.content}</div>
-          <div className={css.date}>
-            Created: {new Date(data.createdAt).toLocaleString()}
-          </div>
-          {data.tag && <span className={css.tag}>{data.tag}</span>}
+          <p className={css.tag}>{note.tag}</p>
+          <p className={css.content}>{note.content}</p>
+          <p className={css.date}>
+            {note?.createdAt
+              ? `Created at: ${note.createdAt} `
+              : `Updated at: ${note.updatedAt}`}
+          </p>
         </div>
       </div>
     </Modal>

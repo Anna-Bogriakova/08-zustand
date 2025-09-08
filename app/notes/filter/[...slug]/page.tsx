@@ -1,4 +1,8 @@
-import { HydrationBoundary, QueryClient, dehydrate } from "@tanstack/react-query";
+import {
+  HydrationBoundary,
+  QueryClient,
+  dehydrate,
+} from "@tanstack/react-query";
 import NotesClient from "./Notes.client";
 import { fetchNotes, NotesResponse } from "@/lib/api";
 import { Metadata } from "next";
@@ -8,9 +12,11 @@ interface NotesPageProps {
   searchParams?: Promise<{ page?: string }>;
 }
 
-export async function generateMetadata(
-  { params }: { params: Promise<{ slug: string[] }> }
-): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string[] }>;
+}): Promise<Metadata> {
   const { slug } = await params;
   const tag = slug?.[0] || "All";
 
@@ -21,15 +27,15 @@ export async function generateMetadata(
       title: `Notes tagged with ${tag} | NoteHub`,
       description: `Browse notes filtered by ${tag} tag.`,
       url: `/notes/filter/${tag}`,
-      images: [
-        "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
-      ],
+      images: ["https://ac.goit.global/fullstack/react/notehub-og-meta.jpg"],
     },
   };
 }
 
-
-export default async function NotesPage({ params, searchParams }: NotesPageProps) {
+export default async function NotesPage({
+  params,
+  searchParams,
+}: NotesPageProps) {
   const { slug } = await params;
   const tag = slug[0] && slug[0] !== "All" ? slug[0] : "";
 

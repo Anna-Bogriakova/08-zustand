@@ -1,25 +1,27 @@
+import { Metadata } from "next";
 import css from "../components/Home/Home.module.css";
-import axios from "axios";
 
-export default async function NotFound() {
-  let data = null;
-
-  // Мінімальна обробка запитів, щоб build не падав
-  try {
-    const res = await axios.get("https://api.example.com/data");
-    data = res.data;
-  } catch (err) {
-    console.warn("Не вдалося отримати дані для 404 сторінки:", err.message);
-    data = null; // залишаємо null
-  }
-
+export const metadata: Metadata = {
+  title: "Page not found – NoteHub",
+  description: "Ця сторінка не існує в NoteHub.",
+  openGraph: {
+    title: "Page not found – NoteHub",
+    description: "Ця сторінка не існує в NoteHub.",
+    url: "https://08-zustand-eta-seven.vercel.app//not-found",
+    images: [
+      {
+        url: "https://ac.goit.global/fullstack/react/notehub-og-meta.jpg",
+      },
+    ],
+  },
+};
+export default function NotFound() {
   return (
     <>
       <h1 className={css.title}>404 - Page not found</h1>
       <p className={css.description}>
         Sorry, the page you are looking for does not exist.
       </p>
-      {data && <p>Додаткова інформація: {JSON.stringify(data)}</p>}
     </>
   );
 }
