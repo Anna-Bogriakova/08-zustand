@@ -14,12 +14,12 @@ import NoteList from "@/components/NoteList/NoteList";
 import Link from "next/link";
 
 interface NotesClientProps {
-  initialTag?: string;
+  tag?: string;
   initialPage?: number;
 }
 
 export default function NotesClient({
-  initialTag = "",
+  tag = "",
   initialPage = 1,
 }: NotesClientProps) {
   const [page, setPage] = useState(initialPage);
@@ -27,17 +27,17 @@ export default function NotesClient({
   const [debouncedSearch] = useDebounce(search, 500);
 
   const perPage = 12;
-  const tag = initialTag === "All" ? "" : initialTag;
+  const normalizedTag = tag === "All" ? "" : tag;
 
   const { data, isLoading, isError } = useQuery<NotesResponse, Error>({
-    queryKey: ["notes", page, tag, debouncedSearch],
-    queryFn: () => fetchNotes(tag, page, perPage, debouncedSearch),
+    queryKey: ["notes", page, normalizedTag, debouncedSearch],
+    queryFn: () => fetchNotes(normalizedTag, page, perPage, debouncedSearch),
     refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
     setPage(1);
-  }, [debouncedSearch, initialTag]);
+  }, [debouncedSearch, normalizedTag]);
 
   useEffect(() => {
     if (isError) {
@@ -69,7 +69,10 @@ export default function NotesClient({
 
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-      {!isLoading && !isError && <NoteList notes={data?.notes ?? []} />}
+
+      {!isLoading && !isError && data?.notes?.length ? (
+        <NoteList notes={data.notes} />
+      ) : null}
     </div>
   );
 }

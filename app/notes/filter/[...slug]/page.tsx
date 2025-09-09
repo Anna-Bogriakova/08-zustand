@@ -37,19 +37,20 @@ export default async function NotesPage({
   searchParams,
 }: NotesPageProps) {
   const { slug } = await params;
-  const tag = slug[0] && slug[0] !== "All" ? slug[0] : "";
+  const tag = slug?.[0] || "All";
+  const normalizedTag = tag !== "All" ? tag : "";
 
   const page = searchParams ? Number((await searchParams).page ?? 1) : 1;
 
   const queryClient = new QueryClient();
   await queryClient.prefetchQuery<NotesResponse>({
-    queryKey: ["notes", page, tag],
-    queryFn: () => fetchNotes(tag, page, 12),
+    queryKey: ["notes", page, normalizedTag],
+    queryFn: () => fetchNotes(normalizedTag, page, 12),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient initialTag={tag} initialPage={page} />
+      <NotesClient tag={normalizedTag} initialPage={page} />
     </HydrationBoundary>
   );
 }
